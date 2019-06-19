@@ -1,14 +1,19 @@
 var ground_height = 30;
 var bg_speed = 4; // 背景移動速度
 var player;
-var blocks, blue_blocks, question_blocks, monsters, blacks, stairs;
-var block_info, blue_block_info, question_block_info, monster_info, blacks_info, stair_info;
+// [Todo-g]-1
+// 如果是全新的重複物體，記得先全域定義過他的物件群和資訊欄 (eg. blocks, block_info)
+var blocks, blue_blocks, question_blocks, monsters, blacks, stairs, grasses;
+var block_info, blue_block_info, question_block_info, monster_info, blacks_info, stair_info, grass_info;
 
 var blueflag_time=0;
 var step=0;
 
 // 目前地圖左側的 x 值相對於整場遊戲是多少（因為 Mario 能向右邊無限前進，所以這裡要另外計算）
 var current_map_left = 0;
+
+// 要新增單一物體（城堡、旗子）請看 [Todo-s]
+// 要新增大量重複的物體（草叢、磚塊、怪物）請看 [Todo-g]
 
 var menuState = {
   preload: function() {
@@ -128,6 +133,8 @@ var secondState = {
     this.cursor = game.input.keyboard.createCursorKeys();
 
     // 創建背景與可以站上去的地板
+    // [Todo-s]0
+    // 在這裡加入圖片與調整其他參數（中心點、縮放、不可移動之類的）
     this.bg = game.add.tileSprite(0, 0, game.width, game.height, 'bg');
     this.castle = game.add.sprite(50, 395, 'castle');
     this.castle.scale.setTo(0.9,0.9);
@@ -148,9 +155,10 @@ var secondState = {
     this.h_pipe.body.immovable = true;
     this.v_pipe.body.immovable = true;
 
+    // [Todo-g]0
+    // 在這裡以 add.grop() 創建物件群，再以 create_things(物件群, 圖片名, arcade_x, arcade_y, scale_x, scale_y, 總數量）初始化
     blocks = game.add.group();
     create_things(blocks, 'block1', 0.5, 0.5, 1, 1, 100);
-
     blue_blocks = game.add.group();
     create_things(blue_blocks, 'block2', 0.5, 0.5, 1, 1, 100);
 
@@ -161,13 +169,15 @@ var secondState = {
   },
 
   update: function() {
-    // 創建 Mario 和地板的碰撞事件
+    // [Todo-s]1
+    // 如果是有碰撞效果的物體，在這邊加入碰撞
     game.physics.arcade.collide(player, this.floor);
     game.physics.arcade.collide(player, this.orange_block);
     game.physics.arcade.collide(player, this.h_pipe);
     game.physics.arcade.collide(player, this.v_pipe);
 
-    // 創建 MArio 和現有磚頭的碰撞事件
+    // [Todo-g]1
+    // 在這裡用 forEachAlive() 把目前畫面中存在的物體都與 mario 加上碰撞
     blocks.forEachAlive(block => {
       game.physics.arcade.collide(player, block);
     });
@@ -178,8 +188,12 @@ var secondState = {
     // 創建 MArio 和enemy的碰撞事件
     game.physics.arcade.overlap(player, this.fly_monster, this.die);
     // Mario 移動相關的判斷
+    // [Todo-s]2
+    // player_move 的第三個參數是陣列，裡面存放的是所有會跟著地圖移動的單一物體，記得加進來
     player_move(this.cursor, this.bg, [this.floor, this.orange_block, this.h_pipe, this.v_pipe, this.castle, this.fly_monster]);
 
+    // [Todo-g]2
+    // 用 generate_blocks(物件群, 物件資訊欄) 來畫出重複物體，記得加進來
     generate_blocks(blocks, block_info);
     generate_blocks(blue_blocks, blue_block_info);
 
@@ -192,11 +206,14 @@ var secondState = {
   },
 
   create_map() {
+    // [Todo-g]3
+    // 把物件資訊欄按照註解填好
+
     // 普通磚塊的部分
     block_info = {
       block_x: [], // 請依據 x 的大小排序
       block_y: [],
-      width: 28
+      width: 28    // 圖片寬度
     };
 
 
@@ -205,7 +222,9 @@ var secondState = {
       block_y: [],
       width: 28
     };
-    
+
+    // [Todo-g]4
+    // init_things 參數是一個陣列，裡面裝了 create_map() 裡每個資訊欄
     init_things([block_info, blue_block_info]);
   },
   
@@ -740,7 +759,7 @@ function player_move(cursor, bg, others = []) {
     if (player.facingRight) player.frame = 1;
     else player.frame = 3;
     // 停止動畫
-    player.animations.stop();
+    // player.animations.stop();
   }
 
   if (cursor.up.isDown) {
@@ -762,43 +781,23 @@ function init_things(array) {
   });
 }
 
+function moving(things, things_info) {
+  things.forEachAlive(block => {
+    block.centerX -= bg_speed;
+    if (block.centerX + things_info.width / 2 < 0) things_info.min_display ++;
+  });
+}
+
 function things_moving() {
-  if (blocks && blocks.length > 1) {
-    blocks.forEachAlive(block => {
-      block.centerX -= bg_speed;
-      if (block.centerX + 14 < 0) block_info.min_display ++;
-    });
-  }
-  if (blue_blocks && blue_blocks.length > 1) {
-    blue_blocks.forEachAlive(block => {
-      block.centerX -= bg_speed;
-      if (block.centerX + 14 < 0) blue_block_info.min_display ++;
-    });
-  }
-  if (question_blocks &&  question_blocks.length > 1) {
-    question_blocks.forEachAlive(block => { 
-      block.centerX -= bg_speed;
-      if (block.centerX + 21 < 0) question_block_info.min_display ++;
-    });
-  }
-  if (monsters && monsters.length > 1) {
-    monsters.forEachAlive(block => { 
-      block.centerX -= bg_speed;
-      if (block.centerX + 50 < 0) monsters.min_display ++;
-    });
-  }
-  if (blacks && blacks.length > 1) {
-    blacks.forEachAlive(block => { 
-      block.centerX -= bg_speed;
-      if (block.centerX + 50 < 0) blacks.min_display ++;
-    });
-  }
-  if (stairs && stairs.length > 1) {
-    stairs.forEachAlive(block => {
-      block.centerX -= bg_speed;
-      if (block.centerX + 14 < 0) stair_info.min_display ++;
-    });
-  }
+  // [Todo-g]5
+  // 如果新增了一個全新的物件群，記得用跟下一面一樣的寫法再加上去ㄛ
+  if (blocks && blocks.length > 1) moving(blocks, block_info);
+  if (blue_blocks && blue_blocks.length > 1) moving(blue_blocks, blue_block_info);
+  if (question_blocks &&  question_blocks.length > 1) moving(question_blocks, question_block_info);
+  if (monsters && monsters.length > 1) moving(monsters, monster_info);
+  if (blacks && blacks.length > 1) moving(blacks, blacks_info);
+  if (stairs && stairs.length > 1) moving(stairs, stair_info);
+  if (grasses && grasses.length > 1) moving(grasses, grass_info);
 }
 
 function generate_blocks(things, things_info) {
@@ -809,7 +808,7 @@ function generate_blocks(things, things_info) {
         block.reset(things_info.block_x[i] - current_map_left, things_info.block_y[i]);
         game.physics.arcade.collide(player, block);
       }
-      else console.log('預設磚頭數量不夠，把 createMultiple 的數值調大');
+      else console.log('預設物品數量不夠，把 createMultiple 的數值調大');
     } else break;
   }
   things_info.max_display = i;
