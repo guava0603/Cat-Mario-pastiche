@@ -1,7 +1,9 @@
 var ground_height = 30;
+var bg_speed = 4; // 背景移動速度
 var player;
-var blocks, blue_blocks, question_blocks, monsters, stairs, blacks;
-var block_info, blue_block_info, question_block_info, monster_info, blacks_info;
+var blocks, blue_blocks, question_blocks, monsters, blacks, stairs;
+var block_info, blue_block_info, question_block_info, monster_info, blacks_info, stair_info;
+
 var blueflag_time=0;
 var step=0;
 
@@ -55,10 +57,9 @@ var firstState = {
     game.physics.arcade.enable(this.floor);
     this.floor.body.immovable = true;
 
-    // Set 所有非 group 型態的背景物體
+    // Set 所有 group 型態的背景物體
     blocks = game.add.group();
     create_things(blocks, 'block1', 0.5, 0.5, 1, 1, 100);
-
     blue_blocks = game.add.group();
     create_things(blue_blocks, 'block2', 0.5, 0.5, 1, 1, 100);
 
@@ -90,21 +91,23 @@ var firstState = {
   create_map() {
     // 普通磚塊的部分
     block_info = {
-      block_x: [50, 100], // 請依據 x 的大小排序
-      block_y: [450, 450]
+      block_x: [ 50, 100], // 請依據 x 的大小排序
+      block_y: [450, 450],
+      width: 28
     };
 
     // 藍磚塊的部分
     blue_block_info = {
       block_x: [150, 200], // 請依據 x 的大小排序
-      block_y: [500, 500]
+      block_y: [500, 500],
+      width: 28
     };
     
     init_things([block_info, blue_block_info]);
   }
 }
 
-var secondState = { //46-
+var secondState = {
   preload: function() {
     game.load.image('bg', 'assets/image/background.jpg');
     game.load.image('ground', 'assets/image/floor_16.png');
@@ -116,7 +119,6 @@ var secondState = { //46-
     game.load.spritesheet('me', 'assets/sprite/Mario.png', 32 , 54);
     game.load.spritesheet('block1', 'assets/image/brick.png', 28, 28);
     game.load.spritesheet('block2', 'assets/image/blue_brick.png', 28, 28);
-
   },
 
   create: function() {
@@ -193,13 +195,15 @@ var secondState = { //46-
     // 普通磚塊的部分
     block_info = {
       block_x: [], // 請依據 x 的大小排序
-      block_y: []
+      block_y: [],
+      width: 28
     };
 
 
     blue_block_info = {
       block_x: [], // 請依據 x 的大小排序
-      block_y: []
+      block_y: [],
+      width: 28
     };
     
     init_things([block_info, blue_block_info]);
@@ -321,18 +325,21 @@ var thirdState = {
     // 普通磚塊的部分
     block_info = {
       block_x: [], // 請依據 x 的大小排序
-      block_y: []
+      block_y: [],
+      width: 28
     };
 
     // 藍磚塊的部分
     blue_block_info = {
       block_x: [680,780,780,880,880,880,980,980,980,980,1230,1230,1230,1230,1330,1330,1330,1430,1430,1530], // 請依據 x 的大小排序
-      block_y: [513,513,465,513,465,417,513,465,417,369, 513, 465, 417, 369, 513, 465, 417, 513, 465, 513]
+      block_y: [513,513,465,513,465,417,513,465,417,369, 513, 465, 417, 369, 513, 465, 417, 513, 465, 513],
+      width: 28
     };
 
     question_block_info = {
       block_x: [375,420,465,510], // 請依據 x 的大小排序
-      block_y: [375,375,375,375]
+      block_y: [375,375,375,375],
+      width: 42
     };
 
     monster_info = {
@@ -342,7 +349,8 @@ var thirdState = {
 
     blacks_info = {
       block_x: [2108,2403,2856,3106,1800,3552], // 請依據 x 的大小排序
-      block_y: [ 500, 500, 500, 500, 500, 500]
+      block_y: [ 500, 500, 500, 500, 500, 500],
+      width: 152
     };
     
     // 以 array 形式包裝上述提到的所有 info，以將所有參數初始值設定好
@@ -378,7 +386,6 @@ var fourthState = {
     game.load.spritesheet('me', 'assets/sprite/Mario.png', 32 , 54);
     game.load.spritesheet('block1', 'assets/image/brick.png',50, 50);
     game.load.spritesheet('block2', 'assets/image/blue_brick.png', 28, 28);
-
   },
 
   create: function() {
@@ -390,15 +397,15 @@ var fourthState = {
     // 創建背景與可以站上去的地板
     this.bg = game.add.tileSprite(0, 0, game.width, game.height, 'bg');
     this.low_pipe = game.add.sprite(80, 430, 'low_pipe');
+    this.bigcat = game.add.sprite(115, 400, 'bigcat');
+    this.longflag = game.add.sprite(1290, 50, 'long_flag');
+    this.blueflag = game.add.sprite(930, 50, 'blue_flag');
     this.bigface = game.add.sprite(45, 25, 'bigface');
     this.bigface2 = game.add.sprite(1810, 25, 'bigface');
-    this.grass = game.add.sprite(1870, 500, 'grass');
-    this.bigcat = game.add.sprite(115, 400, 'bigcat');
-    this.blueflag = game.add.sprite(930, 50, 'blue_flag');
-    this.longflag = game.add.sprite(1290, 50, 'long_flag');
-    this.block_last = game.add.sprite(1285, 485, 'block1');
     this.floor = game.add.tileSprite(0, game.height - ground_height -35, game.width, ground_height+50, 'ground');
     this.floor.scale.setTo(1,0.8);
+    this.block_last = game.add.sprite(1285, 485, 'block1');
+    this.grass = game.add.sprite(1870, 500, 'grass');
     this.castle = game.add.sprite(1570, 390, 'castle');
     this.castle.scale.setTo(0.9,0.9);
     game.physics.arcade.enable(this.floor);
@@ -410,8 +417,8 @@ var fourthState = {
     this.bigcat.body.velocity.y = -800;
     this.bigcat.body.velocity.x = 100;
     this.floor.body.immovable = true;
-    this.block_last.body.immovable = true;
     this.low_pipe.body.immovable = true;
+    this.block_last.body.immovable = true;
 
     this.create_map();
 
@@ -419,40 +426,18 @@ var fourthState = {
     create_mario();
 
     stairs = game.add.group();
-    stairs.enableBody = true;
-    stairs.physicsBodyType = Phaser.Physics.ARCADE;
-    stairs.createMultiple(1000, 'stair');
-    stairs.setAll('anchor.x', 0.5);
-    stairs.setAll('anchor.y', 0.5);
-    stairs.setAll('outOfBoundsKill', true);
-    stairs.setAll('checkWorldBounds', true);
-    stairs.setAll('body.immovable', true);
-
+    create_things(stairs, 'stair', 0.5, 0.5, 1, 1, 100);
     blocks = game.add.group();
-    blocks.enableBody = true;
-    blocks.physicsBodyType = Phaser.Physics.ARCADE;
-    blocks.createMultiple(1000, 'block1');
-    blocks.setAll('anchor.x', 0.5);
-    blocks.setAll('anchor.y', 0.5);
-    blocks.setAll('outOfBoundsKill', true);
-    blocks.setAll('checkWorldBounds', true);
-    blocks.setAll('body.immovable', true);
-
+    create_things(blocks, 'block1', 0.5, 0.5, 1, 1, 100);
     blue_blocks = game.add.group();
-    blue_blocks.enableBody = true;
-    blue_blocks.physicsBodyType = Phaser.Physics.ARCADE;
-    blue_blocks.createMultiple(1000, 'block2');
-    blue_blocks.setAll('anchor.x', 0.5);
-    blue_blocks.setAll('anchor.y', 0.5);
-    blue_blocks.setAll('outOfBoundsKill', true);
-    blue_blocks.setAll('checkWorldBounds', true);
-    blue_blocks.setAll('body.immovable', true);
+    create_things(blue_blocks, 'block2', 0.5, 0.5, 1.7, 1.7, 100);
 
   },
 
   update: function() {
-    // 創建 Mario 和地板的碰撞事件
     this.bigcat.body.gravity.y = 1300;
+
+    // 創建 Mario 和地板的碰撞事件
     game.physics.arcade.collide(player, this.floor);
     game.physics.arcade.collide(this.bigcat, this.floor);
     game.physics.arcade.collide(player, this.low_pipe);
@@ -460,15 +445,16 @@ var fourthState = {
     game.physics.arcade.collide(player, this.bigcat, this.die(0, this.blueflag, this.bigcat));
     // if (game.physics.arcade.collide(player, this.blueflag)) this.collide_flag(this.blueflag, 1, this.block_last);
     if (game.physics.arcade.collide(this.block_last, this.blueflag)) this.collide_flag(this.blueflag, 2, this.block_last);
+
     // 創建 MArio 和現有磚頭的碰撞事件
-    blocks.forEachAlive(block => {
-      game.physics.arcade.collide(player, block);
-      // if (game.physics.arcade.collide(this.blueflag, block)) this.collide_flag(this.blueflag, 2, this.block_last);
-    });
     stairs.forEachAlive(block => {
       game.physics.arcade.collide(player, block);
       game.physics.arcade.collide(this.bigcat, block, this.catmove(this.bigcat));
       // if (game.physics.arcade.collide(this.blueflag, block)) this.collide_flag(this.blueflag, 3, this.block_last);
+    });
+    blocks.forEachAlive(block => {
+      game.physics.arcade.collide(player, block);
+      // if (game.physics.arcade.collide(this.blueflag, block)) this.collide_flag(this.blueflag, 2, this.block_last);
     });
     blue_blocks.forEachAlive(block => {
       game.physics.arcade.collide(player, block);
@@ -493,9 +479,9 @@ var fourthState = {
 
       blueflag_time=1;
       console.log(this.blueflag.body.x);
-        console.log(player.body.x);
-        console.log(this.blueflag.body.y+"y");
-        console.log(player.body.y+"yy");
+      console.log(player.body.x);
+      console.log(this.blueflag.body.y+"y");
+      console.log(player.body.y+"yy");
 
     }
 
@@ -506,53 +492,37 @@ var fourthState = {
       this.blueflag.body.velocity.x=100;
       console.log("block");
     }
-    // Mario 移動相關的判斷
-    player_move4(this.cursor, this.bg, this.floor, this.bigcat, this.low_pipe, this.bigface, this.blueflag, this.longflag, this.castle, this.bigface2, this.grass, this.block_last);
 
     generate_blocks(blocks, block_info);
     generate_blocks(stairs, stair_info);
     generate_blocks(blue_blocks, blue_block_info);
+
+    // Mario 移動相關的判斷
+    player_move(this.cursor, this.bg, [this.bigcat, this.low_pipe, this.bigface, this.blueflag, this.longflag, this.castle, this.bigface2, this.grass, this.block_last]);
   },
 
   create_map() {
     // 普通磚塊的部分
-
     block_info = {
       block_x: [], // 請依據 x 的大小排序
       block_y: [],
-      block_total: 0,
-      block_exist: [],
-      min_display: -1,    // 目前不在螢幕中，且位置處於螢幕左方，且編號最大的磚頭的編號
-      max_display: 0      // 目前不在螢幕中，且位置處於螢幕右方，且編號最小的磚頭的編號
+      width: 28
     };
-    block_info.block_total = block_info.block_x.length;
-    if (block_info.block_x.length !== block_info.block_y.length) console.log("[ Error ]: 磚塊的兩個陣列數量不同，到後面會出錯啦")
-    for (var i = 0; i < block_info.block_total; i++) block_info.block_exist = false;
 
     stair_info = {
       block_x: [260,310,360,410,460,510,560,610,660,310,360,410,460,510,560,610,660,360,410,460,510,560,610,660,410,460,510,560,610,660,460,510,560,610,660,510,560,610,660,560,610,660,610,660,710,760,810,860,910,960,1010], // 請依據 x 的大小排序
-      block_y: [510,510,510,510,510,510,510,510,510,460,460,460,460,460,460,460,460,410,410,410,410,410,410,410,360,360,360,360,360,360,310,310,310,310,310,260,260,260,260,210,210,210,160,160,510,510,510,510,510,510,510],
-      block_total: 0,
-      block_exist: [],
-      min_display: -1,    // 目前不在螢幕中，且位置處於螢幕左方，且編號最大的磚頭的編號
-      max_display: 0      // 目前不在螢幕中，且位置處於螢幕右方，且編號最小的磚頭的編號
+      block_y: [510,510,510,510,510,510,510,510,510,460,460,460,460,460,460,460,460,410,410,410,410,410,410,410,360,360,360,360,360,360,310,310,310,310,310,260,260,260,260,210,210,210,160,160,510,510,510,510,510,510, 510],
+      width: 50
     };
-    stair_info.block_total = stair_info.block_x.length;
-    if (stair_info.block_x.length !== stair_info.block_y.length) console.log("[ Error ]: 磚塊的兩個陣列數量不同，到後面會出錯啦")
-    for (var i = 0; i < stair_info.block_total; i++) stair_info.block_exist = false;
 
     // 藍磚塊的部分
     blue_block_info = {
       block_x: [], // 請依據 x 的大小排序
       block_y: [],
-      block_total: 0,
-      block_exist: [],
-      min_display: -1,    // 目前不在螢幕中，且位置處於螢幕左方，且編號最大的磚頭的編號
-      max_display: 0      // 目前不在螢幕中，且位置處於螢幕右方，且編號最小的磚頭的編號
+      width: 28
     };
-    blue_block_info.block_total = blue_block_info.block_x.length;
-    if (blue_block_info.block_x.length !== blue_block_info.block_y.length) console.log("[ Error ]: 磚塊的兩個陣列數量不同，到後面會出錯啦")
-    for (var i = 0; i < blue_block_info.block_total; i++) blue_block_info.block_exist = false;
+
+    init_things([block_info, blue_block_info, stair_info]);
   },
   
   die: function(input, blueflag, bigcat){
@@ -629,51 +599,21 @@ var fifthState = {
 
     // 創建 Mario
     create_mario();
-
+    
     blocks = game.add.group();
-    blocks.enableBody = true;
-    blocks.physicsBodyType = Phaser.Physics.ARCADE;
-    blocks.createMultiple(100, 'block1');
-    blocks.setAll('anchor.x', 0.5);
-    blocks.setAll('anchor.y', 0.5);
-    blocks.setAll('outOfBoundsKill', true);
-    blocks.setAll('checkWorldBounds', true);
-    blocks.setAll('body.immovable', true);
-
+    create_things(blocks, 'block1', 0.5, 0.5, 1, 1, 100);
     blue_blocks = game.add.group();
-    blue_blocks.enableBody = true;
-    blue_blocks.physicsBodyType = Phaser.Physics.ARCADE;
-    blue_blocks.createMultiple(100, 'block2');
-    blue_blocks.setAll('anchor.x', 0.5);
-    blue_blocks.setAll('anchor.y', 0.5);
-    blue_blocks.setAll('outOfBoundsKill', true);
-    blue_blocks.setAll('checkWorldBounds', true);
-    blue_blocks.setAll('body.immovable', true);
-
+    create_things(blue_blocks, 'block2', 0.5, 0.5, 1.7, 1.7, 100);
     question_blocks = game.add.group();
-    question_blocks.enableBody = true;
-    question_blocks.physicsBodyType = Phaser.Physics.ARCADE;
-    question_blocks.createMultiple(100, 'block3');
-    question_blocks.setAll('anchor.x', 0.5);
-    question_blocks.setAll('anchor.y', 0.5);
-    question_blocks.setAll('outOfBoundsKill', true);
-    question_blocks.setAll('checkWorldBounds', true);
-    question_blocks.setAll('body.immovable', true);
-
+    create_things(question_blocks, 'block3', 0.5, 0.5, 1, 1, 100);
     grasses = game.add.group();
-    // grasses.enableBody = true;
-    // grasses.physicsBodyType = Phaser.Physics.ARCADE;
-    grasses.createMultiple(100, 'grass');
-    grasses.setAll('anchor.x', 0.5);
-    grasses.setAll('anchor.y', 0.5);
-    // grasses.setAll('outOfBoundsKill', true);
-    // grasses.setAll('checkWorldBounds', true);
-    // grasses.setAll('body.immovable', true);
+    create_things(question_blocks, 'grass', 0.5, 0.5, 1, 1, 100);
   },
 
   update: function() {
     // 創建 Mario 和地板的碰撞事件
     game.physics.arcade.collide(player, this.floor);
+
     // 創建 MArio 和現有磚頭的碰撞事件
     blocks.forEachAlive(block => {
       game.physics.arcade.collide(player, block);
@@ -687,8 +627,9 @@ var fifthState = {
     grasses.forEachAlive(block => {
       game.physics.arcade.collide(player, block);
     });
+
     // Mario 移動相關的判斷
-    player_move5(this.cursor, this.bg, this.floor , this.strangebox, this.gq);
+    player_move(this.cursor, this.bg, [this.floor, this.strangebox, this.gq]);
 
     generate_blocks(blocks, block_info);
     generate_blocks(blue_blocks, blue_block_info);
@@ -700,54 +641,31 @@ var fifthState = {
     block_info = {
       block_x: [], // 請依據 x 的大小排序
       block_y: [],
-      block_total: 0,
-      block_exist: [],
-      min_display: -1,    // 目前不在螢幕中，且位置處於螢幕左方，且編號最大的磚頭的編號
-      max_display: 0      // 目前不在螢幕中，且位置處於螢幕右方，且編號最小的磚頭的編號
+      width: 28
     };
-    block_info.block_total = block_info.block_x.length;
-    if (block_info.block_x.length !== block_info.block_y.length) console.log("[ Error ]: 磚塊的兩個陣列數量不同，到後面會出錯啦")
-    for (var i = 0; i < block_info.block_total; i++) block_info.block_exist = false;
 
     // 藍磚塊的部分
     blue_block_info = {
       block_x: [], // 請依據 x 的大小排序
       block_y: [],
-      block_total: 0,
-      block_exist: [],
-      min_display: -1,    // 目前不在螢幕中，且位置處於螢幕左方，且編號最大的磚頭的編號
-      max_display: 0      // 目前不在螢幕中，且位置處於螢幕右方，且編號最小的磚頭的編號
+      width: 28 * 1.7
     };
-    blue_block_info.block_total = blue_block_info.block_x.length;
-    if (blue_block_info.block_x.length !== blue_block_info.block_y.length) console.log("[ Error ]: 磚塊的兩個陣列數量不同，到後面會出錯啦")
-    for (var i = 0; i < blue_block_info.block_total; i++) blue_block_info.block_exist = false;
 
     // 問號磚塊的部分
     question_block_info = {
       block_x: [375], // 請依據 x 的大小排序
       block_y: [375],
-      block_total: 0,
-      block_exist: [],
-      min_display: -1,    // 目前不在螢幕中，且位置處於螢幕左方，且編號最大的磚頭的編號
-      max_display: 0      // 目前不在螢幕中，且位置處於螢幕右方，且編號最小的磚頭的編號
+      width: 42
     };
-    question_block_info.block_total = question_block_info.block_x.length;
-    if (question_block_info.block_x.length !== question_block_info.block_y.length) console.log("[ Error ]: 磚塊的兩個陣列數量不同，到後面會出錯啦")
-    for (var i = 0; i < question_block_info.block_total; i++) question_block_info.block_exist = false;
 
     // 草地的部分
     grass_info = {
       block_x: [300,780], // 請依據 x 的大小排序
-      block_y: [515,515],
-      block_total: 0,
-      block_exist: [],
-      min_display: -1,    // 目前不在螢幕中，且位置處於螢幕左方，且編號最大的磚頭的編號
-      max_display: 0      // 目前不在螢幕中，且位置處於螢幕右方，且編號最小的磚頭的編號
+      block_y: [515,515], // 磚頭的編號
+      width: 112
     };
-    grass_info.block_total = grass_info.block_x.length;
-    if (grass_info.block_x.length !== grass_info.block_y.length) console.log("[ Error ]: 磚塊的兩個陣列數量不同，到後面會出錯啦")
-    for (var i = 0; i < grass_info.block_total; i++) grass_info.block_exist = false;
-    
+
+    init_things([block_info, blue_block_info, question_block_info, grass_info]);
   }
 }
 
@@ -765,7 +683,6 @@ var endState = {
 function create_things(thing, name, anchor_x, anchor_y, scale_x, scale_y, total) {
   thing.enableBody = true;
   thing.physicsBodyType = Phaser.Physics.ARCADE;
-  console.log(total, name);
   thing.createMultiple(total, name);
   thing.setAll('anchor.x', anchor_x);
   thing.setAll('anchor.y', anchor_y);
@@ -777,7 +694,6 @@ function create_things(thing, name, anchor_x, anchor_y, scale_x, scale_y, total)
 }
 
 function create_mario() {
-  console.log(2);
   // 畫出 Mario
   player = game.add.sprite(game.width / 4, game.height - ground_height-50, 'me');
   player.anchor.setTo(0.5, 1); // 定位點在下方中間
@@ -794,9 +710,8 @@ function create_mario() {
   player.body.gravity.y = 1200;
 }
 
-function player_move(cursor, bg, others = []) { //momo
+function player_move(cursor, bg, others = []) {
   // 背景移動速度
-  var bg_speed = 4;
   if (cursor.left.isDown) {
     if (player.x > player.body.width / 2) player.body.velocity.x = -200;
     else {
@@ -815,7 +730,7 @@ function player_move(cursor, bg, others = []) { //momo
       others.forEach(other => {
         other.centerX -= bg_speed;
       });
-      things_moving(bg_speed);
+      things_moving();
     }
     if (!cursor.up.isDown) player.animations.play('rightwalk');
     player.facingRight = true;
@@ -847,7 +762,7 @@ function init_things(array) {
   });
 }
 
-function things_moving(bg_speed) {
+function things_moving() {
   if (blocks && blocks.length > 1) {
     blocks.forEachAlive(block => {
       block.centerX -= bg_speed;
@@ -878,275 +793,17 @@ function things_moving(bg_speed) {
       if (block.centerX + 50 < 0) blacks.min_display ++;
     });
   }
-}
-
-function player_move3(cursor, bg, ground, green_monster, black1, black2, v_pipe, black3,bigcat,black4,black5,five_brick,five_bluebrick) {
-  // 背景移動速度
-  var bg_speed = 4;
-  // Mario 走到左右哪裡時地圖會延伸（目前是遊戲畫面的 1/4 和 3/4
-  var left_wall = game.width / 4, right_wall = game.width * 3 / 4;
-
-  if (cursor.left.isDown) {
-    // if (player.x > left_wall)
-    // if(player.x <= five_bluebrick.x+250 && player.x>=five_bluebrick.x) five_bluebrick.body.velocity.y = 500;
-     player.body.velocity.x = -200;
-     if(player.x <= 25) player.x=25; 
-    // else {
-    //   player.body.velocity.x = 0;
-    //   player.x = left_wall;
-    //   bg.tilePosition.x += bg_speed;
-    //   ground.tilePosition.x += bg_speed;
-    //   current_map_left -= bg_speed;
-    //   blocks.forEachAlive(block => {
-    //     block.centerX += bg_speed;
-    //     if (block.centerX - 14 > game.width) block_info.max_display --;
-    //   });
-    //   blue_blocks.forEachAlive(block => {
-    //     block.centerX += bg_speed;
-    //     if (block.centerX - 14 > game.width) blue_block_info.max_display --;
-    //   });
-    //   question_blocks.forEachAlive(block => { 
-    //     block.centerX += bg_speed;
-    //     if (block.centerX - 14 > game.width) question_block_info.max_display --;
-    //   });
-    // }
-    if (!cursor.up.isDown) player.animations.play('leftwalk');
-    player.facingRight = false;
-  }
-  else if (cursor.right.isDown) {
-    // console.log(player.x, ground.tilePosition.x);
-    // if(player.x >= five_brick.x) five_brick.body.velocity.y = 500;
-
-    if (player.x < right_wall) player.body.velocity.x = 200;
-    else {
-      player.body.velocity.x = 0;
-      player.x = right_wall;
-      bg.tilePosition.x -= bg_speed;
-      ground.tilePosition.x -= bg_speed;
-      green_monster.x -= bg_speed;
-      // black1.x -= bg_speed;
-      // black2.x -= bg_speed;
-      // black3.x -= bg_speed;
-      // black4.x -= bg_speed;
-      // black5.x -= bg_speed;
-      bigcat.x -= bg_speed;
-      v_pipe.x -= bg_speed;
-      five_brick.x -= bg_speed;
-      five_bluebrick.x -= bg_speed;
-      current_map_left += bg_speed;
-      blocks.forEachAlive(block => {
-        block.centerX -= bg_speed;
-        if (block.centerX + 14 < 0) block_info.min_display ++;
-      });
-      blue_blocks.forEachAlive(block => {
-        block.centerX -= bg_speed;
-        if (block.centerX + 23.8 < 0) blue_block_info.min_display ++;
-      });
-      question_blocks.forEachAlive(block => { 
-        block.centerX -= bg_speed;
-        if (block.centerX + 21 < 0) question_block_info.min_display ++;
-      });
-      monsters.forEachAlive(block => { 
-        block.centerX -= bg_speed;
-        if (block.centerX + 50 < 0) monsters.min_display ++;
-      });
-      blacks.forEachAlive(block => { 
-        block.centerX -= bg_speed;
-        if (block.centerX + 50 < 0) blacks.min_display ++;
-      });
-    }
-    if (!cursor.up.isDown) player.animations.play('rightwalk');
-    player.facingRight = true;
-  }
-  else {
-    player.body.velocity.x = 0;
-    if (player.facingRight) player.frame = 1;
-    else player.frame = 3;
-    // 停止動畫
-    player.animations.stop();
-  }
-
-  if (cursor.up.isDown) {
-    if(player.body.touching.down){
-        // Move the player upward (jump)
-        if (player.facingRight) player.animations.play('rightjump');
-        else player.animations.play('leftjump');
-        player.body.velocity.y = -750;
-    }
-  }
-}
-
-function player_move4(cursor, bg, ground, bigcat, low_pipe, bigface, blueflag, longflag, castle, bigface2, grass, block_last) { //momo
-  // 背景移動速度
-  //
-  var bg_speed = 4;
-  // Mario 走到左右哪裡時地圖會延伸（目前是遊戲畫面的 1/4 和 3/4
-  var left_wall = game.width / 4, right_wall = game.width * 3 / 4;
-
-  if (cursor.left.isDown) {
-    if (player.x > 30) player.body.velocity.x = -200;
-    else {
-      player.body.velocity.x = 0;
-      player.x = left_wall;
-      bg.tilePosition.x += bg_speed;
-      ground.tilePosition.x += bg_speed;
-      current_map_left -= bg_speed;
-      blocks.forEachAlive(block => {
-        block.centerX += bg_speed;
-        if (block.centerX - 14 > game.width) block_info.max_display --;
-      });
-      blue_blocks.forEachAlive(block => {
-        block.centerX += bg_speed;
-        if (block.centerX - 14 > game.width) blue_block_info.max_display --;
-      });
-      stairs.forEachAlive(block => {
-        block.centerX += bg_speed;
-        if (block.centerX - 14 > game.width) stair_info.max_display --;
-      });
-    }
-    if (!cursor.up.isDown) player.animations.play('leftwalk');
-    player.facingRight = false;
-  }
-  else if (cursor.right.isDown) {
-    // console.log(player.x, ground.tilePosition.x);
-    if (player.x < right_wall) player.body.velocity.x = 200;
-    else {
-      player.body.velocity.x = 0;
-      player.x = right_wall;
-      bg.tilePosition.x -= bg_speed;
-      ground.tilePosition.x -= bg_speed;
-      low_pipe.x -= bg_speed;
-      bigcat.x -=bg_speed;
-      bigface.x -=bg_speed;
-      bigface2.x -=bg_speed;
-      castle.x -=bg_speed;
-      block_last.x -=bg_speed;
-      grass.x -=bg_speed;
-      blueflag.x -=bg_speed;
-      current_map_left += bg_speed;
-      longflag.x -=bg_speed;
-      blocks.forEachAlive(block => {
-        block.centerX -= bg_speed;
-        if (block.centerX + 25 < 0) block_info.min_display ++;
-      });
-      stairs.forEachAlive(block => {
-        block.centerX -= bg_speed;
-        if (block.centerX + 25 < 0) stair_info.min_display ++;
-      });
-      blue_blocks.forEachAlive(block => {
-        block.centerX -= bg_speed;
-        if (block.centerX + 14 < 0) blue_block_info.min_display ++;
-      });
-    }
-    if (!cursor.up.isDown) player.animations.play('rightwalk');
-    player.facingRight = true;
-  }
-  else {
-    player.body.velocity.x = 0;
-    if (player.facingRight) player.frame = 1;
-    else player.frame = 3;
-    // 停止動畫
-    player.animations.stop();
-  }
-
-  if (cursor.up.isDown) {
-    if(player.body.touching.down){
-        // Move the player upward (jump)
-        if (player.facingRight) player.animations.play('rightjump');
-        else player.animations.play('leftjump');
-        player.body.velocity.y = -650;
-    }
-  }
-}
-
-function player_move5(cursor, bg, ground, strangebox,gq) {
-  // 背景移動速度
-  var bg_speed = 4;
-  // Mario 走到左右哪裡時地圖會延伸（目前是遊戲畫面的 1/4 和 3/4
-  var left_wall = game.width / 4, right_wall = game.width * 3 / 4;
-
-  if (cursor.left.isDown) {
-    if (player.x > left_wall) player.body.velocity.x = -200;
-    else {
-      player.body.velocity.x = 0;
-      player.x = left_wall;
-      bg.tilePosition.x += bg_speed;
-      strangebox.x += bg_speed;
-      gq.x += bg_speed
-      ground.tilePosition.x += bg_speed;
-      current_map_left -= bg_speed;
-      blocks.forEachAlive(block => {
-        block.centerX += bg_speed;
-        if (block.centerX - 14 > game.width) block_info.max_display --;
-      });
-      blue_blocks.forEachAlive(block => {
-        block.centerX += bg_speed;
-        if (block.centerX - 14 > game.width) blue_block_info.max_display --;
-      });
-      question_blocks.forEachAlive(block => { 
-        block.centerX += bg_speed;
-        if (block.centerX - 14 > game.width) question_block_info.max_display --;
-      });
-      grasses.forEachAlive(block => { 
-        block.centerX += bg_speed;
-        if (block.centerX - 14 > game.width) grass_info.max_display --;
-      });
-    }
-    if (!cursor.up.isDown) player.animations.play('leftwalk');
-    player.facingRight = false;
-  }
-  else if (cursor.right.isDown) {
-    // console.log(player.x, ground.tilePosition.x);
-    if (player.x < right_wall) player.body.velocity.x = 200;
-    else {
-      player.body.velocity.x = 0;
-      player.x = right_wall;
-      bg.tilePosition.x -= bg_speed;
-      strangebox.x -= bg_speed;
-      gq.x -= bg_speed;
-      ground.tilePosition.x -= bg_speed;
-      current_map_left += bg_speed;
-      blocks.forEachAlive(block => {
-        block.centerX -= bg_speed;
-        if (block.centerX + 14 < 0) block_info.min_display ++;
-      });
-      blue_blocks.forEachAlive(block => {
-        block.centerX -= bg_speed;
-        if (block.centerX + 14 < 0) blue_block_info.min_display ++;
-      });
-      question_blocks.forEachAlive(block => { 
-        block.centerX -= bg_speed;
-        if (block.centerX + 14 < 0) question_block_info.min_display ++;
-      });
-      grasses.forEachAlive(block => { 
-        block.centerX -= bg_speed;
-        if (block.centerX + 14 < 0) grass_info.min_display ++;
-      });
-    }
-    if (!cursor.up.isDown) player.animations.play('rightwalk');
-    player.facingRight = true;
-  }
-  else {
-    player.body.velocity.x = 0;
-    if (player.facingRight) player.frame = 1;
-    else player.frame = 3;
-    // 停止動畫
-    player.animations.stop();
-  }
-
-  if (cursor.up.isDown) {
-    if(player.body.touching.down){
-        // Move the player upward (jump)
-        if (player.facingRight) player.animations.play('rightjump');
-        else player.animations.play('leftjump');
-        player.body.velocity.y = -750; //Ed
-    }
+  if (stairs && stairs.length > 1) {
+    stairs.forEachAlive(block => {
+      block.centerX -= bg_speed;
+      if (block.centerX + 14 < 0) stair_info.min_display ++;
+    });
   }
 }
 
 function generate_blocks(things, things_info) {
   for (var i = things_info.max_display; i < things_info.block_total; i++) {
-    if (things_info.block_x[i] < current_map_left + game.width) {
+    if (things_info.block_x[i] - things_info.width / 2 < current_map_left + game.width) {
       var block = things.getFirstExists(false);
       if (block) {
         block.reset(things_info.block_x[i] - current_map_left, things_info.block_y[i]);
@@ -1156,10 +813,6 @@ function generate_blocks(things, things_info) {
     } else break;
   }
   things_info.max_display = i;
-}
-
-function is_overlap(x1, x2, y1, y2) {
-  return !(x2 < y1 || x1 > y2);
 }
 
 var game = new Phaser.Game(800, 600, Phaser.AUTO, 'canvas');
@@ -1173,4 +826,4 @@ game.state.add('L3', thirdState);
 game.state.add('L4', fourthState);
 game.state.add('L5', fifthState);
 game.state.add('end', endState);
-game.state.start('L2');
+game.state.start('L1');
