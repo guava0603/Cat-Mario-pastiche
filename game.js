@@ -515,7 +515,6 @@ var fourthState = {
     generate_blocks(blocks, block_info);
     generate_blocks(stairs, stair_info);
     generate_blocks(blue_blocks, blue_block_info);
-    generate_blocks(blacks, blacks_info);
 
     // Mario 移動相關的判斷
     player_move(this.cursor, this.bg, [this.bigcat, this.low_pipe, this.bigface, this.blueflag, this.longflag, this.castle, this.bigface2, this.grass, this.block_last]);
