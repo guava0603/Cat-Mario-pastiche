@@ -46,8 +46,7 @@ var menuState = {
   update: function() {
     if(startbutton.isDown)
     {
-      console.log('start');
-      game.state.start('L3');
+      changeState('L3');
     }
 
   }
@@ -474,7 +473,7 @@ var thirdState = {
       this.f_pipe.bringToTop();
     }
     if (player.body.x>=this.f_pipe.x+30){
-      game.state.start('L4');
+      changeState('L4');
     }
     // 創建 MArio 和現有磚頭的碰撞事件
     blocks.forEachAlive(block => {
@@ -1065,6 +1064,11 @@ function generate_blocks(things, things_info) {
     } else break;
   }
   things_info.max_display = i;
+}
+
+function changeState(state) {
+  current_map_left = 0;
+  game.state.start(state);
 }
 
 var game = new Phaser.Game(800, 600, Phaser.AUTO, 'canvas');
