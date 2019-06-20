@@ -653,7 +653,6 @@ var fourthState = {
 
     // 創建 Mario
     create_mario();
-
     stairs = game.add.group();
     create_things(stairs, 'stair', 0.5, 0.5, 1, 1, 100);
     blocks = game.add.group();
@@ -1078,4 +1077,4 @@ game.state.add('L3', thirdState);
 game.state.add('L4', fourthState);
 game.state.add('L5', fifthState);
 game.state.add('end', endState);
-game.state.start('L2');
+game.state.start('L4');
