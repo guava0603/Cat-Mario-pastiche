@@ -14,6 +14,7 @@ var life=4;
 // 目前地圖左側的 x 值相對於整場遊戲是多少（因為 Mario 能向右邊無限前進，所以這裡要另外計算）
 var current_map_left = 0;
 var nowstate=0;
+var is_moving = false;
 // 要新增單一物體（城堡、旗子）請看 [Todo-s]
 // 要新增大量重複的物體（草叢、磚塊、怪物）請看 [Todo-g]
 
@@ -434,7 +435,7 @@ var thirdState = {
     
     if (this.green_question.body) {
       if(game.physics.arcade.collide(player, this.green_question)) {
-        this.green_question.visible = false;
+        this.green_question.destroy();
         this.teacher.visible = true;
         this.teacher.body.velocity.x=50;
         this.teacher.body.velocity.y=-200;
@@ -442,19 +443,26 @@ var thirdState = {
     }
     
     if(game.physics.arcade.collide(player, this.mushroom)) this.die();
-    if(game.physics.arcade.collide(player, this.q_block) && this.mush_time==0){
-      this.mush_time=1;
-      this.q_block.visible=false;
-      this.mushroom.visible = true;
-      this.mushroom.body.velocity.y = -30;
+
+    if (this.q_block.body) {
+      if(game.physics.arcade.collide(player, this.q_block) && this.mush_time==0){
+        this.mush_time=1;
+        this.q_block.destroy();
+        this.mushroom.visible = true;
+        this.mushroom.body.velocity.y = -30;
+      }
     }
-    if(this.mushroom.y<134){
-      this.mushroom.y=134;
-      this.mushroom.body.velocity.x = 50;
+    
+    if (this.mushroom.body) {
+      if(this.mushroom.y<134){
+        this.mushroom.y=134;
+        this.mushroom.body.velocity.x = 50;
+      }
+      if (this.mushroom.x>this.no_line1.x+110 && this.mushroom.y==134){
+        this.mushroom.body.gravity.y = 500;
+      }
     }
-    if (this.mushroom.x>this.no_line1.x+110 && this.mushroom.y==134){
-      this.mushroom.body.gravity.y = 500;
-    }
+    
     if(game.physics.arcade.collide(player, this.green_monster)) this.die();
     if(game.physics.arcade.collide(player, this.monster2)) this.die();
     game.physics.arcade.collide(player, this.no_line);
@@ -648,6 +656,8 @@ var fourthState = {
     this.longflag.body.immovable = true;
     this.low_pipe.body.immovable = true;
     this.block_last.body.immovable = true;
+    this.blueflag.body.immovable = true;
+    this.blueflag.body.moves = true;
     this.longflag_time=0;
     this.game_end=0;
     blueflag_time=0;
@@ -700,9 +710,15 @@ var fourthState = {
         this.blueflag.body.velocity.x = 100;
         console.log("dcfs");
       }
+      if (blueflag_time > 0 && player.y > 100) this.die(1, this.blueflag, this.bigcat);
       
       blueflag_time=1;
-      
+      if (this.blueflag.body.velocity.x > 0) {
+        is_moving = true;
+      }
+      console.log(player.body.velocity);
+    } else {
+      is_moving = false;
     }
     if (player.body.x>=this.longflag.body.x-30 && player.body.y>=this.longflag.body.x-30 && this.longflag_time==0){
       this.longflag_time=1;
@@ -717,6 +733,15 @@ var fourthState = {
       //&& this.block_last.x-this.blueflag.x>=250
       this.blueflag.body.velocity.x=100;
       console.log("block");
+    }
+
+
+    if (player.x  > this.castle.x && player.x < this.castle.x + 168) {
+      console.log('enter');
+      if (this.cursor.down.isDown) {
+        console.log('down');
+        changeState('L5');
+      }
     }
 
     generate_blocks(blocks, block_info);
@@ -779,7 +804,6 @@ var fourthState = {
 
 function player_move1(cursor, bg, ground, others = [], game_end, floor) {
   // 背景移動速度
-  if (game_end==0){
     if (cursor.left.isDown) {
       if (player.x > player.body.width / 2) player.body.velocity.x = -200;
       else {
@@ -820,19 +844,17 @@ function player_move1(cursor, bg, ground, others = [], game_end, floor) {
           player.body.velocity.y = -750;
       }
     }
-  }
-  else {
-    player.body.velocity.x = 100;
-    bg.tilePosition.x -= bg_speed;
-    floor.tilePosition.x -= bg_speed;
-    current_map_left += bg_speed;
-    others.forEach(other => {
-      other.centerX -= bg_speed;
-    });
-    things_moving();
-    player.animations.play('rightwalk');
-    player.facingRight = true;
-  }
+
+    if (is_moving) {
+      player.body.velocity.x = 0;
+      bg.tilePosition.x -= bg_speed;
+      ground.tilePosition.x -= bg_speed;
+      current_map_left += bg_speed;
+      others.forEach(other => {
+        other.centerX -= bg_speed;
+      });
+      things_moving();
+    }
 }
 
 
@@ -1109,4 +1131,4 @@ game.state.add('L3', thirdState);
 game.state.add('L4', fourthState);
 game.state.add('L5', fifthState);
 game.state.add('end', endState);
-game.state.start('menu');
+game.state.start('L4');
