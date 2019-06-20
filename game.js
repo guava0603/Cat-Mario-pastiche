@@ -10,9 +10,10 @@ var blueflag_time=0;
 var step=0;
 
 var state=0;
+var life=4;
 // 目前地圖左側的 x 值相對於整場遊戲是多少（因為 Mario 能向右邊無限前進，所以這裡要另外計算）
 var current_map_left = 0;
-
+var nowstate=0;
 // 要新增單一物體（城堡、旗子）請看 [Todo-s]
 // 要新增大量重複的物體（草叢、磚塊、怪物）請看 [Todo-g]
 
@@ -22,31 +23,25 @@ var menuState = {
     game.load.image('ground', 'assets/image/ground.png');
     game.load.image('menu','assets/image/menu.png');
     game.load.image('s_btn', 'assets/image/start_button.png');
+    game.load.audio('bg_music', 'assets/sound/background_music.mp3');
   },
 
   create: function() {
     game.add.image(0, 0, 'menu');
-    //game.add.image(0, game.height - ground_height, 'ground');
-
-    startbutton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-    console.log('start');
-    // 按下後就會開始遊戲的按鈕
-    //this.s_btn = game.add.image(game.width / 2, game.height * 2 / 3, 's_btn');
-    //this.s_btn.anchor.setTo(0.5, 0.5);
-    //this.s_btn.scale.setTo(0.5, 0.5);
-    //this.s_btn.inputEnabled = true;
-    // 為按鈕創建滑鼠點擊事件，點擊後跳轉至 L1 state
+    life=4;
+    startbutton = game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
+    this.bg_music = game.add.audio('bg_music', 10, true);
+    this.bg_music.play();
     
-    //this.s_btn.events.onInputDown.add(function() {
-      //game.state.start('L1');
-    //});
+    console.log('start');
+    
 
   },
 
   update: function() {
     if(startbutton.isDown)
     {
-      changeState('L3');
+      changeState('L2');
     }
 
   }
@@ -182,6 +177,7 @@ var secondState = {
   update: function() {
     // [Todo-s]1
     // 如果是有碰撞效果的物體，在這邊加入碰撞
+    nowstate=2;
     game.physics.arcade.collide(player, this.floor);
     game.physics.arcade.collide(player, this.orange_block);
     game.physics.arcade.collide(player, this.h_pipe);
@@ -242,6 +238,7 @@ var secondState = {
   
   die: function(){
     console.log('die');
+    game.state.start('end');
   }
 }
 function player_move2(cursor, bg, others = []) {
@@ -331,7 +328,7 @@ var thirdState = {
     this.monster2.scale.setTo(1,1);
     game.physics.arcade.enable(this.monster2);
 
-    this.mushroom = game.add.sprite(3855, 179, 'mushroom');
+    this.mushroom = game.add.sprite(3855, 173, 'mushroom');
     this.mushroom.visible = false;
     game.physics.arcade.enable(this.mushroom);
     this.no_line1 = game.add.sprite(3855, 179, 'no_line');
@@ -417,27 +414,33 @@ var thirdState = {
 
   update: function() {
     // 創建 Mario 和地板的碰撞事件
-    if(player.y<=0) this.die();
+    nowstate=3;
+    if(player.y>=600) this.die();
 
-    if(this.monster2.x<=850 && this.monster2.x>=0){
-      this.monster2.body.velocity.x = 100 * this.monster2_direction;
+    if (this.monster2.body) {
+      if(this.monster2.x<=850 && this.monster2.x>=0){
+        this.monster2.body.velocity.x = 100 * this.monster2_direction;
+        // console.log(this.monster2.body);
+      }
+      else this.monster2.body.velocity.x = 0;
+      if(game.physics.arcade.overlap(this.monster2, this.mushroom)) {
+        this.monster2.destroy();
+        this.mushroom.destroy();
+        this.penguin.visible = true;
+        this.penguin.bringToTop();
+        this.penguin.body.gravity.y = 100;
+      }
     }
-    else this.monster2.body.velocity.x = 0;
-
-    if(game.physics.arcade.overlap(this.monster2, this.mushroom)) {
-      this.monster2.visible = false;
-      this.mushroom.visible = false;
-      this.penguin.visible = true;
-      this.penguin.bringToTop();
-      this.penguin.body.gravity.y = 100;
+    
+    if (this.green_question.body) {
+      if(game.physics.arcade.collide(player, this.green_question)) {
+        this.green_question.visible = false;
+        this.teacher.visible = true;
+        this.teacher.body.velocity.x=50;
+        this.teacher.body.velocity.y=-200;
+      }
     }
-
-    if(game.physics.arcade.collide(player, this.green_question)) {
-      this.green_question.visible = false;
-      this.teacher.visible = true;
-      this.teacher.body.velocity.x=50;
-      this.teacher.body.velocity.y=-200;
-    }
+    
     if(game.physics.arcade.collide(player, this.mushroom)) this.die();
     if(game.physics.arcade.collide(player, this.q_block) && this.mush_time==0){
       this.mush_time=1;
@@ -592,6 +595,7 @@ var thirdState = {
 
   die(){
     console.log('die');
+    game.state.start('end');
   }
 }
 
@@ -663,6 +667,7 @@ var fourthState = {
   },
 
   update: function() {
+    nowstate=4;
     this.bigcat.body.gravity.y = 1300;
 
     // 創建 Mario 和地板的碰撞事件
@@ -753,6 +758,7 @@ var fourthState = {
       blueflag.body.immovable=true;
       console.log('die');
     }
+    game.state.start('end');
   },
 
   catmove: function(bigcat){
@@ -939,14 +945,35 @@ var endState = {
   },
 
   create: function() {
+    life=life-1;
+    this.delay=game.time.now+2000;
     var style = {font: "35px Arial", fill: "#ffffff"};
     this.bg = game.add.tileSprite(0, 0, game.width, game.height, 'gameover');
     this.text = game.add.text(420, 290, "X", style);
-    this.lifetext = game.add.text(460, 290, "-1", style);
+    this.lifetext = game.add.text(460, 290, life, style);
 
   },
 
   update: function() {
+    if(this.delay<=game.time.now) 
+    {
+      if(nowstate==1) 
+      {
+        changeState('L1');
+      }
+      else if (nowstate==2)
+      {
+        changeState('L2');
+      }
+      else if (nowstate==3)
+      {
+        changeState('L3');
+      }
+      else if (nowstate==4)
+      {
+       changeState('L4');
+      }
+    }
   }
 }
 
@@ -1082,4 +1109,4 @@ game.state.add('L3', thirdState);
 game.state.add('L4', fourthState);
 game.state.add('L5', fifthState);
 game.state.add('end', endState);
-game.state.start('L2');
+game.state.start('menu');
