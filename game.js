@@ -262,7 +262,7 @@ function player_move2(cursor, bg, others = []) {
     player.facingRight = true;
   }
   else if(cursor.down.isDown){
-    if(player.x >= 670) game.state.start('L3');
+    if(player.x >= 670) changeState('L3');
   }
   else {
     player.body.velocity.x = 0;
