@@ -9,6 +9,7 @@ var block_info, blue_block_info, question_block_info, monster_info, blacks_info,
 var blueflag_time=0;
 var step=0;
 
+var state=0;
 // 目前地圖左側的 x 值相對於整場遊戲是多少（因為 Mario 能向右邊無限前進，所以這裡要另外計算）
 var current_map_left = 0;
 
@@ -201,7 +202,7 @@ var secondState = {
     // Mario 移動相關的判斷
     // [Todo-s]2
     // player_move 的第三個參數是陣列，裡面存放的是所有會跟著地圖移動的單一物體，記得加進來
-    player_move(this.cursor, this.bg, [this.floor, this.orange_block, this.h_pipe, this.v_pipe, this.castle, this.fly_monster]);
+    player_move2(this.cursor, this.bg, [this.floor, this.orange_block, this.h_pipe, this.v_pipe, this.castle, this.fly_monster]);
 
     // [Todo-g]2
     // 用 generate_blocks(物件群, 物件資訊欄) 來畫出重複物體，記得加進來
@@ -244,6 +245,43 @@ var secondState = {
     console.log('die');
   }
 }
+function player_move2(cursor, bg, others = []) {
+  // 背景移動速度
+  if (cursor.left.isDown) {
+    if (player.x > player.body.width / 2) player.body.velocity.x = -200;
+    else {
+      player.body.velocity.x = 0;
+      player.x = player.body.width / 2;
+    }
+    if (!cursor.up.isDown) player.animations.play('leftwalk');
+    player.facingRight = false;
+  }
+  else if (cursor.right.isDown) {
+     player.body.velocity.x = 200;
+      things_moving();
+    if (!cursor.up.isDown) player.animations.play('rightwalk');
+    player.facingRight = true;
+  }
+  else if(cursor.down.isDown){
+    if(player.x >= 670) game.state.start('L3');
+  }
+  else {
+    player.body.velocity.x = 0;
+    if (player.facingRight) player.frame = 1;
+    else player.frame = 3;
+    // 停止動畫
+    // player.animations.stop();
+  }
+
+  if (cursor.up.isDown) {
+    if(player.body.touching.down){
+        // Move the player upward (jump)
+        if (player.facingRight) player.animations.play('rightjump');
+        else player.animations.play('leftjump');
+        player.body.velocity.y = -750;
+    }
+  }
+}
 
 var thirdState = {
   preload: function() {
@@ -268,7 +306,8 @@ var thirdState = {
     game.load.spritesheet('green_question', 'assets/image/green_question.png', 52, 52);
     game.load.spritesheet('teacher', 'assets/image/teacher.png', 142, 162);
     game.load.spritesheet('25brick', 'assets/image/wholebluebrick.png', 250, 270);
-    game.load.spritesheet('second_level_pipe', 'assets/image/second_level_pipe.png', 209, 334)
+    game.load.spritesheet('second_level_pipe', 'assets/image/second_level_pipe.png', 209, 334);
+    game.load.spritesheet('penguin', 'assets/image/penguin.png', 255, 325);
   },
 
   create: function() {
@@ -304,7 +343,7 @@ var thirdState = {
     this.q_block.body.immovable = true;
     this.mush_time=0;
 
-    this.v_pipe = game.add.sprite(2650, 430, 'v_pipe');
+    this.v_pipe = game.add.sprite(2650, 440, 'v_pipe');
     game.physics.arcade.enable(this.v_pipe);
     this.v_pipe.body.immovable = true;
 
@@ -331,13 +370,18 @@ var thirdState = {
     this.teacher = game.add.sprite(4750, 385, 'teacher');
     game.physics.arcade.enable(this.teacher);
     this.teacher.visible = false;
-
+    this.teacher.outOfBoundsKill = true;
     this.brick_25 = game.add.sprite(5950, 334, '25brick');
     game.physics.arcade.enable(this.brick_25);
     this.brick25_time=0;
     this.f_pipe = game.add.sprite(6250, 0, 'second_level_pipe');
     game.physics.arcade.enable(this.f_pipe);
     this.f_pipe_time=0;
+
+    this.penguin = game.add.sprite(4050, 0, 'penguin');
+    game.physics.arcade.enable(this.penguin);
+    this.penguin.visible = false;
+    this.penguin.outOfBoundsKill = true;
     // Set 所有 group 型態背景物體的參數
     this.create_map();
 
@@ -368,20 +412,26 @@ var thirdState = {
     this.monster2_direction=-1;
     // 創建 Mario
     create_mario();
+    player.y=0;
+    player.x=100;
   },
 
   update: function() {
     // 創建 Mario 和地板的碰撞事件
     if(player.y<=0) this.die();
 
-    if(this.monster2.x<=800 && this.monster2.x>=0){
+    if(this.monster2.x<=850 && this.monster2.x>=0){
       this.monster2.body.velocity.x = 100 * this.monster2_direction;
     }
     else this.monster2.body.velocity.x = 0;
-    
-    if(game.physics.arcade.collide(this.monster2, this.mushroom)){
-      console.log(2);
-    }//還沒寫完
+
+    if(game.physics.arcade.overlap(this.monster2, this.mushroom)) {
+      this.monster2.visible = false;
+      this.mushroom.visible = false;
+      this.penguin.visible = true;
+      this.penguin.bringToTop();
+      this.penguin.body.gravity.y = 100;
+    }
 
     if(game.physics.arcade.collide(player, this.green_question)) {
       this.green_question.visible = false;
@@ -483,7 +533,7 @@ var thirdState = {
     // Mario 移動相關的判斷
     // 第三個參數是 array 形式，裡面裝了所有非 group 形式的背景物體
     // 只要這樣包好就能讓這些物體直接能跟著動了～
-    player_move(this.cursor, this.bg, [this.five_bluebrick, this.five_brick, this.v_pipe, this.bigcat, this.green_monster,this.flag,this.no_line,this.monster2,this.q_block,this.no_line1,this.mushroom,this.green_question,this.teacher,this.brick_25,this.f_pipe]);
+    player_move(this.cursor, this.bg, [this.five_bluebrick, this.five_brick, this.v_pipe, this.bigcat, this.green_monster,this.flag,this.no_line,this.monster2,this.q_block,this.no_line1,this.mushroom,this.green_question,this.teacher,this.brick_25,this.f_pipe,this.penguin]);
 
     // 所有「Player 走到某處就觸發什麼事件」的判斷都能寫在這，這樣就不用特別獨立出不同的 player_move 了
     if(player.x <= this.five_bluebrick.x + 200 && player.x >= this.five_bluebrick.x && this.five_brick.body.velocity.y == 500) this.five_bluebrick.body.velocity.y = 500;
@@ -571,7 +621,7 @@ var fourthState = {
 
     // 創建背景與可以站上去的地板
     this.bg = game.add.tileSprite(0, 0, game.width, game.height, 'bg');
-    this.low_pipe = game.add.sprite(80, 430, 'low_pipe');
+    this.low_pipe = game.add.sprite(80, 440, 'low_pipe');
     this.bigcat = game.add.sprite(115, 400, 'bigcat');
     this.longflag = game.add.sprite(1290, 50, 'long_flag');
     this.blueflag = game.add.sprite(930, 50, 'blue_flag');
@@ -1028,4 +1078,4 @@ game.state.add('L3', thirdState);
 game.state.add('L4', fourthState);
 game.state.add('L5', fifthState);
 game.state.add('end', endState);
-game.state.start('L4');
+game.state.start('L2');
