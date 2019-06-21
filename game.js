@@ -1213,10 +1213,10 @@ function is_overlap(center1, center1Y, w1, center2, center2Y, w2) {
 
 function checking(things, things_info) {
   things.forEachAlive(block => {
-    if (is_overlap(block.centerX, block.centerY, things_info.width / 2, player.centerX, player.centerY, 20)) {
+    if (is_overlap(block.centerX, block.centerY, things_info.width / 2, player.centerX, player.centerY, 25)) {
     // if (block.centerX - things_info.width / 2 <= player.centerX + 20 && block.centerX - things_info.width / 2 >= player.centerX - 20) {
       player.body.velocity.centerX = 0;
-      player.centerX = block.centerX - things_info.width / 2 - 20;
+      player.centerX = block.centerX - things_info.width / 2 - 25;
       is_collide = true;
       return;
     }
