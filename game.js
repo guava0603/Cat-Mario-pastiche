@@ -973,6 +973,9 @@ var fifthState = {
       }
     }
 
+    if(player.y<=0){
+      changeState('win');
+    }
     // Mario 移動相關的判斷
     player_move(this.cursor, this.bg, [this.floor, this.strangebox, this.gq,this.grass,this.grass2,this.bigface,this.bigface2,this.mushroom, this.q_block, this.no_line1]);
 
@@ -1015,6 +1018,26 @@ var fifthState = {
   die(){
     console.log('die');
     game.state.start('end');
+  }
+}
+
+var winState = {
+  preload: function() {
+    game.load.image('gameover', 'assets/image/gameover.jpg');
+  },
+
+  create: function() {
+    this.delay=game.time.now+5000;
+    var style = {font: "35px Arial", fill: "#ffffff"};
+    this.bg = game.add.tileSprite(0, 0, game.width, game.height, 'gameover');
+    this.text = game.add.text(420, 290, "WIN!", style);
+    this.IQ = game.add.text(220, 200, "Intelligence Quotient:", style);
+    this.lifetext = game.add.text(560, 200, 300+(life*50), style);
+    
+  },
+
+  update: function() {
+    if(this.delay<=game.time.now) changeState('menu');
   }
 }
 
@@ -1192,4 +1215,5 @@ game.state.add('L3', thirdState);
 game.state.add('L4', fourthState);
 game.state.add('L5', fifthState);
 game.state.add('end', endState);
-game.state.start('L5');
+game.state.add('win', winState);
+game.state.start('win');
