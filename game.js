@@ -863,6 +863,7 @@ var fifthState = {
     game.load.image('ground', 'assets/image/floor_16.png');
     game.load.image('strangebox', 'assets/image/strangebox.png');
     game.load.image('grass', 'assets/image/grass.png');
+    game.load.image('bigface', 'assets/image/bigface.png');
     game.load.image('gq', 'assets/image/green_question.png');
     game.load.spritesheet('me', 'assets/sprite/Mario.png', 40 , 51);
     game.load.spritesheet('block1', 'assets/image/brick.png', 28, 28);
@@ -884,7 +885,19 @@ var fifthState = {
     this.strangebox.scale.setTo(0.9,0.9);
     this.gq = game.add.sprite(475, 485, 'gq');
     game.physics.arcade.enable(this.floor);
+    game.physics.arcade.enable(this.gq);
     this.floor.body.immovable = true;
+
+
+    this.grass = game.add.sprite(300, 495, 'grass');
+    this.grass2 = game.add.sprite(600, 495, 'grass');
+    game.physics.arcade.enable(this.grass);
+    game.physics.arcade.enable(this.grass2);
+    this.grass.visible=false;
+    this.grass2.visible=false;
+
+    this.bigface = game.add.sprite(100, 100, 'bigface');
+    this.bigface2 = game.add.sprite(350, 50, 'bigface');
 
     this.create_map();
 
@@ -904,8 +917,14 @@ var fifthState = {
 
   update: function() {
     // 創建 Mario 和地板的碰撞事件
+    if(game.physics.arcade.collide(player, this.gq)) {
+      console.log(1);
+      this.gq.destroy();
+      this.grass.visible=true;
+      this.grass2.visible=true;
+    }
     game.physics.arcade.collide(player, this.floor);
-    if(player.y>=600) this.die();
+    if(player.y>=600 || game.physics.arcade.collide(player, this.grass) || game.physics.arcade.collide(player, this.grass2)) this.die();
     // 創建 MArio 和現有磚頭的碰撞事件
     blocks.forEachAlive(block => {
       game.physics.arcade.collide(player, block);
@@ -916,12 +935,9 @@ var fifthState = {
     question_blocks.forEachAlive(block => {
       game.physics.arcade.collide(player, block);
     });
-    grasses.forEachAlive(block => {
-      game.physics.arcade.collide(player, block);
-    });
 
     // Mario 移動相關的判斷
-    player_move(this.cursor, this.bg, [this.floor, this.strangebox, this.gq]);
+    player_move(this.cursor, this.bg, [this.floor, this.strangebox, this.gq,this.grass,this.grass2,this.bigface,this.bigface2]);
 
     generate_blocks(blocks, block_info);
     generate_blocks(blue_blocks, blue_block_info);
@@ -952,8 +968,8 @@ var fifthState = {
 
     // 草地的部分
     grass_info = {
-      block_x: [300,780], // 請依據 x 的大小排序
-      block_y: [515,515], // 磚頭的編號
+      block_x: [300], // 請依據 x 的大小排序
+      block_y: [300], // 磚頭的編號
       width: 112
     };
 
