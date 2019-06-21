@@ -360,7 +360,7 @@ var thirdState = {
     game.physics.arcade.enable(this.no_line);
     this.no_line.body.immovable = true;
     this.no_line.visible = false;
-    this.line_time=0
+    this.line_time=0;
 
     this.green_question = game.add.sprite(4750, 385, 'green_question');
     game.physics.arcade.enable(this.green_question);
@@ -911,6 +911,18 @@ var fifthState = {
     this.q_block.body.immovable = true;
     this.mush_time=0;
 
+    this.no_line = game.add.sprite(660, 220, 'no_line');
+    game.physics.arcade.enable(this.no_line);
+    this.no_line.body.immovable = true;
+    this.no_line.visible = false;
+    this.line_time=0;
+
+    this.no_line2 = game.add.sprite(720, 65, 'no_line');
+    game.physics.arcade.enable(this.no_line2);
+    this.no_line2.body.immovable = true;
+    this.no_line2.visible = false;
+    this.line_time2=0;
+
     this.grassflag=0;
     this.create_map();
 
@@ -938,6 +950,8 @@ var fifthState = {
       this.grassflag=1;
     }
     game.physics.arcade.collide(player, this.floor);
+    game.physics.arcade.collide(player, this.no_line);
+    game.physics.arcade.collide(player, this.no_line2);
     if(this.no_line1.visible==true) game.physics.arcade.collide(player, this.no_line1);
     game.physics.arcade.collide(this.mushroom, this.floor)
     if(player.y>=600|| (this.grassflag==0&&(game.physics.arcade.collide(player, this.grass)||game.physics.arcade.collide(player, this.grass2)))) this.die();
@@ -973,11 +987,21 @@ var fifthState = {
       }
     }
 
-    if(player.y<=0){
+    if(player.y<=-50){
       changeState('win');
     }
+    if (player.body.x>=this.no_line.x-30 && player.body.y<=this.no_line.y+100 && this.line_time==0){
+      this.line_time=1;
+      this.no_line.visible = true;
+    }
+    if (player.body.x>=this.no_line2.x-30 && player.body.y<=this.no_line2.y+100 && this.line_time2==0){
+      this.line_time2=1;
+      this.no_line2.visible = true;
+    }
+    
+
     // Mario 移動相關的判斷
-    player_move(this.cursor, this.bg, [this.floor, this.strangebox, this.gq,this.grass,this.grass2,this.bigface,this.bigface2,this.mushroom, this.q_block, this.no_line1]);
+    player_move(this.cursor, this.bg, [this.floor, this.strangebox, this.gq,this.grass,this.grass2,this.bigface,this.bigface2,this.mushroom, this.q_block, this.no_line1, this.no_line,this.no_line2]);
 
     generate_blocks(blocks, block_info);
     generate_blocks(blue_blocks, blue_block_info);
@@ -1216,4 +1240,4 @@ game.state.add('L4', fourthState);
 game.state.add('L5', fifthState);
 game.state.add('end', endState);
 game.state.add('win', winState);
-game.state.start('win');
+game.state.start('L5');
