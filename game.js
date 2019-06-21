@@ -893,6 +893,7 @@ var fifthState = {
     this.no_line1 = game.add.sprite(375, 375, 'no_line');
     game.physics.arcade.enable(this.no_line1);
     this.no_line1.body.immovable = true;
+    this.no_line1.visible = false;
     this.q_block = game.add.sprite(375, 375, 'block3');
     game.physics.arcade.enable(this.q_block);
     this.q_block.body.immovable = true;
@@ -917,7 +918,8 @@ var fifthState = {
   update: function() {
     // 創建 Mario 和地板的碰撞事件
     game.physics.arcade.collide(player, this.floor);
-    game.physics.arcade.collide(this.mushroom, this.floor)
+    game.physics.arcade.collide(this.mushroom, this.floor);
+    if (this.no_line1.visible==true) game.physics.arcade.collide(this.no_line1, player);
     if(player.y>=600) this.die();
     // 創建 MArio 和現有磚頭的碰撞事件
     blocks.forEachAlive(block => {
@@ -940,6 +942,7 @@ var fifthState = {
         this.q_block.destroy();
         this.mushroom.visible = true;
         this.mushroom.body.velocity.y = -30;
+        this.no_line1.visible = true;
       }
     }
     
