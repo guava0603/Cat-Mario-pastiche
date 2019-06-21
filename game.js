@@ -296,10 +296,10 @@ var thirdState = {
     game.load.spritesheet('flag', 'assets/image/flag.png', 100, 100);
     game.load.spritesheet('yellow', 'assets/image/yellow_rectangle_stair.png', 100, 100);
     game.load.spritesheet('no_line', 'assets/image/bluebrick_with_no_line.png', 100, 100);
+    game.load.spritesheet('mushroom', 'assets/image/mushroom.png', 45, 45);
     game.load.image('v_pipe', 'assets/image/low_pipe.png');
     game.load.image('five_brick', 'assets/image/five_brick.png');
     game.load.image('five_bluebrick', 'assets/image/five_horizontal_bluebrick.png');
-    game.load.spritesheet('mushroom', 'assets/image/mushroom.png', 45, 45);
     game.load.spritesheet('green_question', 'assets/image/green_question.png', 52, 52);
     game.load.spritesheet('teacher', 'assets/image/teacher.png', 142, 162);
     game.load.spritesheet('25brick', 'assets/image/wholebluebrick.png', 250, 270);
@@ -421,7 +421,6 @@ var thirdState = {
     if (this.monster2.body) {
       if(this.monster2.x<=800 && this.monster2.x>=0){
         this.monster2.body.velocity.x = 100 * this.monster2_direction;
-        // console.log(this.monster2.body);
       }
       else this.monster2.body.velocity.x = 0;
       if(game.physics.arcade.overlap(this.monster2, this.mushroom)) {
@@ -869,6 +868,8 @@ var fifthState = {
     game.load.spritesheet('block1', 'assets/image/brick.png', 28, 28);
     game.load.spritesheet('block2', 'assets/image/blue_brick.png', 28, 28);
     game.load.spritesheet('block3', 'assets/image/question_box.png', 42, 42);
+    game.load.spritesheet('no_line', 'assets/image/bluebrick_with_no_line.png', 42, 42);
+    game.load.spritesheet('mushroom', 'assets/image/mushroom.png', 45, 45);
   },
 
   create: function() {
@@ -898,7 +899,19 @@ var fifthState = {
 
     this.bigface = game.add.sprite(100, 100, 'bigface');
     this.bigface2 = game.add.sprite(350, 50, 'bigface');
+    this.mushroom = game.add.sprite(595, 370, 'mushroom');
+    this.mushroom.visible = false;
+    game.physics.arcade.enable(this.mushroom);
+    this.no_line1 = game.add.sprite(600, 375, 'no_line');
+    game.physics.arcade.enable(this.no_line1);
+    this.no_line1.visible = false;
+    this.no_line1.body.immovable = true;
+    this.q_block = game.add.sprite(600, 375, 'block3');
+    game.physics.arcade.enable(this.q_block);
+    this.q_block.body.immovable = true;
+    this.mush_time=0;
 
+    this.grassflag=0;
     this.create_map();
 
     nowstate=5;
@@ -922,9 +935,12 @@ var fifthState = {
       this.gq.destroy();
       this.grass.visible=true;
       this.grass2.visible=true;
+      this.grassflag=1;
     }
     game.physics.arcade.collide(player, this.floor);
-    if(player.y>=600 || game.physics.arcade.collide(player, this.grass) || game.physics.arcade.collide(player, this.grass2)) this.die();
+    if(this.no_line1.visible==true) game.physics.arcade.collide(player, this.no_line1);
+    game.physics.arcade.collide(this.mushroom, this.floor)
+    if(player.y>=600|| (this.grassflag==0&&(game.physics.arcade.collide(player, this.grass)||game.physics.arcade.collide(player, this.grass2)))) this.die();
     // 創建 MArio 和現有磚頭的碰撞事件
     blocks.forEachAlive(block => {
       game.physics.arcade.collide(player, block);
@@ -936,8 +952,29 @@ var fifthState = {
       game.physics.arcade.collide(player, block);
     });
 
+    if(game.physics.arcade.collide(player, this.mushroom)) this.die();
+    if (this.q_block.body) {
+      if(game.physics.arcade.collide(player, this.q_block) && this.mush_time==0){
+        this.mush_time=1;
+        this.q_block.destroy();
+        this.mushroom.visible = true;
+        this.mushroom.body.velocity.y = -30;
+        this.no_line1.visible = true;
+      }
+    }
+    
+    if (this.mushroom.body) {
+      if(this.mushroom.y<330){
+        this.mushroom.y=330;
+        this.mushroom.body.velocity.x = 50;
+      }
+      if (this.mushroom.x>this.no_line1.x+35 && this.mushroom.y==330){
+        this.mushroom.body.gravity.y = 500;
+      }
+    }
+
     // Mario 移動相關的判斷
-    player_move(this.cursor, this.bg, [this.floor, this.strangebox, this.gq,this.grass,this.grass2,this.bigface,this.bigface2]);
+    player_move(this.cursor, this.bg, [this.floor, this.strangebox, this.gq,this.grass,this.grass2,this.bigface,this.bigface2,this.mushroom, this.q_block, this.no_line1]);
 
     generate_blocks(blocks, block_info);
     generate_blocks(blue_blocks, blue_block_info);
@@ -961,8 +998,8 @@ var fifthState = {
 
     // 問號磚塊的部分
     question_block_info = {
-      block_x: [375], // 請依據 x 的大小排序
-      block_y: [375],
+      block_x: [], // 請依據 x 的大小排序
+      block_y: [],
       width: 42
     };
 
