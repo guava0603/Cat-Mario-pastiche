@@ -360,7 +360,7 @@ var thirdState = {
     game.physics.arcade.enable(this.no_line);
     this.no_line.body.immovable = true;
     this.no_line.visible = false;
-    this.line_time=0
+    this.line_time=0;
 
     this.green_question = game.add.sprite(4750, 385, 'green_question');
     game.physics.arcade.enable(this.green_question);
@@ -862,6 +862,7 @@ var fifthState = {
     game.load.image('ground', 'assets/image/floor_16.png');
     game.load.image('strangebox', 'assets/image/strangebox.png');
     game.load.image('grass', 'assets/image/grass.png');
+    game.load.image('bigface', 'assets/image/bigface.png');
     game.load.image('gq', 'assets/image/green_question.png');
     game.load.spritesheet('me', 'assets/sprite/Mario.png', 40 , 51);
     game.load.spritesheet('block1', 'assets/image/brick.png', 28, 28);
@@ -885,20 +886,44 @@ var fifthState = {
     this.strangebox.scale.setTo(0.9,0.9);
     this.gq = game.add.sprite(475, 485, 'gq');
     game.physics.arcade.enable(this.floor);
+    game.physics.arcade.enable(this.gq);
     this.floor.body.immovable = true;
 
-    this.mushroom = game.add.sprite(375, 370, 'mushroom');
+
+    this.grass = game.add.sprite(300, 495, 'grass');
+    this.grass2 = game.add.sprite(600, 495, 'grass');
+    game.physics.arcade.enable(this.grass);
+    game.physics.arcade.enable(this.grass2);
+    this.grass.visible=false;
+    this.grass2.visible=false;
+
+    this.bigface = game.add.sprite(100, 100, 'bigface');
+    this.bigface2 = game.add.sprite(350, 50, 'bigface');
+    this.mushroom = game.add.sprite(595, 370, 'mushroom');
     this.mushroom.visible = false;
     game.physics.arcade.enable(this.mushroom);
-    this.no_line1 = game.add.sprite(375, 375, 'no_line');
+    this.no_line1 = game.add.sprite(600, 375, 'no_line');
     game.physics.arcade.enable(this.no_line1);
-    this.no_line1.body.immovable = true;
     this.no_line1.visible = false;
-    this.q_block = game.add.sprite(375, 375, 'block3');
+    this.no_line1.body.immovable = true;
+    this.q_block = game.add.sprite(600, 375, 'block3');
     game.physics.arcade.enable(this.q_block);
     this.q_block.body.immovable = true;
     this.mush_time=0;
 
+    this.no_line = game.add.sprite(670, 220, 'no_line');
+    game.physics.arcade.enable(this.no_line);
+    this.no_line.body.immovable = true;
+    this.no_line.visible = false;
+    this.line_time=0;
+
+    this.no_line2 = game.add.sprite(740, 65, 'no_line');
+    game.physics.arcade.enable(this.no_line2);
+    this.no_line2.body.immovable = true;
+    this.no_line2.visible = false;
+    this.line_time2=0;
+
+    this.grassflag=0;
     this.create_map();
 
     nowstate=5;
@@ -917,10 +942,19 @@ var fifthState = {
 
   update: function() {
     // 創建 Mario 和地板的碰撞事件
+    if(game.physics.arcade.collide(player, this.gq)) {
+      console.log(1);
+      this.gq.destroy();
+      this.grass.visible=true;
+      this.grass2.visible=true;
+      this.grassflag=1;
+    }
     game.physics.arcade.collide(player, this.floor);
-    game.physics.arcade.collide(this.mushroom, this.floor);
-    if (this.no_line1.visible==true) game.physics.arcade.collide(this.no_line1, player);
-    if(player.y>=600) this.die();
+    game.physics.arcade.collide(player, this.no_line);
+    game.physics.arcade.collide(player, this.no_line2);
+    if(this.no_line1.visible==true) game.physics.arcade.collide(player, this.no_line1);
+    game.physics.arcade.collide(this.mushroom, this.floor)
+    if(player.y>=600|| (this.grassflag==0&&(game.physics.arcade.collide(player, this.grass)||game.physics.arcade.collide(player, this.grass2)))) this.die();
     // 創建 MArio 和現有磚頭的碰撞事件
     blocks.forEachAlive(block => {
       game.physics.arcade.collide(player, block);
@@ -929,9 +963,6 @@ var fifthState = {
       game.physics.arcade.collide(player, block);
     });
     question_blocks.forEachAlive(block => {
-      game.physics.arcade.collide(player, block);
-    });
-    grasses.forEachAlive(block => {
       game.physics.arcade.collide(player, block);
     });
 
@@ -956,8 +987,18 @@ var fifthState = {
       }
     }
 
+    if (player.body.x>=this.no_line.x-30 && player.body.y<=this.no_line.y+100 && this.line_time==0){
+      this.line_time=1;
+      this.no_line.visible = true;
+    }
+    if (player.body.x>=this.no_line2.x-30 && player.body.y<=this.no_line2.y+100 && this.line_time2==0){
+      this.line_time2=1;
+      this.no_line2.visible = true;
+    }
+    
+
     // Mario 移動相關的判斷
-    player_move(this.cursor, this.bg, [this.floor, this.strangebox, this.gq, this.mushroom, this.q_block, this.q_block]);
+    player_move(this.cursor, this.bg, [this.floor, this.strangebox, this.gq,this.grass,this.grass2,this.bigface,this.bigface2,this.mushroom, this.q_block, this.no_line1, this.no_line,this.no_line2]);
 
     generate_blocks(blocks, block_info);
     generate_blocks(blue_blocks, blue_block_info);
@@ -988,8 +1029,8 @@ var fifthState = {
 
     // 草地的部分
     grass_info = {
-      block_x: [300,780], // 請依據 x 的大小排序
-      block_y: [515,515], // 磚頭的編號
+      block_x: [300], // 請依據 x 的大小排序
+      block_y: [300], // 磚頭的編號
       width: 112
     };
 
