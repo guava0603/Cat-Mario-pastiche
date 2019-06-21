@@ -515,7 +515,7 @@ var thirdState = {
     blacks.forEachAlive(block => {
       game.physics.arcade.collide(player, block);
       game.physics.arcade.collide(this.mushroom, block);
-      if(game.physics.arcade.collide(this.monster2, block)){
+      if(game.physics.arcade.collide(this.monster2, block)||this.monster2.x>=800){
         if(this.monster2_delay < game.time.now){
           this.monster2_direction *= -1;
           this.monster2_delay += 1000;
@@ -1240,4 +1240,4 @@ game.state.add('L4', fourthState);
 game.state.add('L5', fifthState);
 game.state.add('end', endState);
 game.state.add('win', winState);
-game.state.start('L5');
+game.state.start('L3');
