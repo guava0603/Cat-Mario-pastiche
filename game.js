@@ -15,6 +15,7 @@ var life=4;
 var current_map_left = 0;
 var nowstate=0;
 var is_moving = false;
+var is_collide = false;
 // 要新增單一物體（城堡、旗子）請看 [Todo-s]
 // 要新增大量重複的物體（草叢、磚塊、怪物）請看 [Todo-g]
 
@@ -50,8 +51,11 @@ var menuState = {
 
 var firstState = {
   preload: function() {
-    game.load.image('bg', 'assets/image/background.png');
+    game.load.image('bg', 'assets/image/background.jpg');
     game.load.image('ground', 'assets/image/ground.png');
+    game.load.image('bigface', 'assets/image/bigface.png');
+    game.load.image('green_mountain', 'assets/image/green_mountain.png');
+    game.load.spritesheet('block3', 'assets/image/question_box.png', 42, 42);
     game.load.spritesheet('me', 'assets/sprite/Mario.png', 40 , 51);
     game.load.spritesheet('block1', 'assets/image/brick.png', 28, 28);
     game.load.spritesheet('block2', 'assets/image/blue_brick.png', 28, 28);
@@ -66,6 +70,9 @@ var firstState = {
     // 創建背景與可以站上去的地板
     this.bg = game.add.tileSprite(0, 0, game.width, game.height, 'bg');
     this.floor = game.add.tileSprite(0, game.height - ground_height, game.width, ground_height, 'ground');
+    this.bigface = game.add.sprite(200, 60, 'bigface');
+    this.green_mountain = game.add.sprite(30, 500, 'green_mountain');
+    this.green_mountain.anchor.setTo(0, 1);
     game.physics.arcade.enable(this.floor);
     this.floor.body.immovable = true;
 
@@ -79,6 +86,8 @@ var firstState = {
 
     // 創建 Mario
     create_mario();
+    // Mario 移動相關的判斷
+    player_move1(this.cursor, this.bg, this.floor, [this.bigface]);
   },
 
   update: function() {
@@ -1149,15 +1158,18 @@ function player_move(cursor, bg, others = []) {
     player.facingRight = false;
   }
   else if (cursor.right.isDown) {
+    things_checking();
     if (player.x < game.width * 3 / 4) player.body.velocity.x = 200;
     else {
       player.body.velocity.x = 0;
-      bg.tilePosition.x -= bg_speed;
-      current_map_left += bg_speed;
-      others.forEach(other => {
-        other.centerX -= bg_speed;
-      });
-      things_moving();
+      if (!is_collide) {
+        things_moving();
+        bg.tilePosition.x -= bg_speed;
+        current_map_left += bg_speed;
+        others.forEach(other => {
+          other.centerX -= bg_speed;
+        });
+      }
     }
     if (!cursor.up.isDown) player.animations.play('rightwalk');
     player.facingRight = true;
@@ -1178,6 +1190,7 @@ function player_move(cursor, bg, others = []) {
         player.body.velocity.y = -750;
     }
   }
+  is_collide = false;
 }
 
 function init_things(array) {
@@ -1189,11 +1202,43 @@ function init_things(array) {
   });
 }
 
+function is_overlap(center1, center1Y, w1, center2, center2Y, w2) {
+  const left1 = center1 - w1;
+  const right1 = center1 + w1;
+  const left2 = center2 - w2;
+  const right2 = center2 + w2;
+
+  return ((left1 >= left2 && left1 <= right2) || (left2 >= left1 && left2 <= right1)) && center2Y < center1Y + w1 && center2Y > center1Y - w1;
+}
+
+function checking(things, things_info) {
+  things.forEachAlive(block => {
+    if (is_overlap(block.centerX, block.centerY, things_info.width / 2, player.centerX, player.centerY, 20)) {
+    // if (block.centerX - things_info.width / 2 <= player.centerX + 20 && block.centerX - things_info.width / 2 >= player.centerX - 20) {
+      player.body.velocity.centerX = 0;
+      player.centerX = block.centerX - things_info.width / 2 - 20;
+      is_collide = true;
+      return;
+    }
+  });
+}
+
 function moving(things, things_info) {
   things.forEachAlive(block => {
     block.centerX -= bg_speed;
     if (block.centerX + things_info.width / 2 < 0) things_info.min_display ++;
   });
+}
+
+function things_checking() {
+  if (blocks && blocks.length > 1 &&!is_collide) checking(blocks, block_info);
+  if (blue_blocks && blue_blocks.length > 1 &&!is_collide) checking(blue_blocks, blue_block_info);
+  if (question_blocks &&  question_blocks.length > 1 &&!is_collide) checking(question_blocks, question_block_info);
+  if (monsters && monsters.length > 1 &&!is_collide) checking(monsters, monster_info);
+  if (blacks && blacks.length > 1 &&!is_collide) checking(blacks, blacks_info);
+  if (stairs && stairs.length > 1 &&!is_collide) checking(stairs, stair_info);
+  if (grasses && grasses.length > 1 &&!is_collide) checking(grasses, grass_info);
+  if (yellows && yellows.length > 1 &&!is_collide) checking(yellows, yellow_info);
 }
 
 function things_moving() {
@@ -1240,4 +1285,4 @@ game.state.add('L4', fourthState);
 game.state.add('L5', fifthState);
 game.state.add('end', endState);
 game.state.add('win', winState);
-game.state.start('menu');
+game.state.start('L3');
