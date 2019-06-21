@@ -1240,4 +1240,4 @@ game.state.add('L4', fourthState);
 game.state.add('L5', fifthState);
 game.state.add('end', endState);
 game.state.add('win', winState);
-game.state.start('L3');
+game.state.start('menu');
