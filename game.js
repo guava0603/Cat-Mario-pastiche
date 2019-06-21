@@ -1131,4 +1131,4 @@ game.state.add('L3', thirdState);
 game.state.add('L4', fourthState);
 game.state.add('L5', fifthState);
 game.state.add('end', endState);
-game.state.start('L4');
+game.state.start('menu');
