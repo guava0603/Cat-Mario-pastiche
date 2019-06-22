@@ -857,7 +857,7 @@ var fourthState = {
     create_things(blocks, 'block1', 0.5, 0.5, 1, 1, 100);
     blue_blocks = game.add.group();
     create_things(blue_blocks, 'block2', 0.5, 0.5, 1.7, 1.7, 100);
-
+    player.y=0;
   },
 
   update: function() {
