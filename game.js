@@ -43,7 +43,7 @@ var menuState = {
   update: function() {
     if(startbutton.isDown)
     {
-      changeState('L2');
+      changeState('L1');
     }
 
   }
@@ -1420,7 +1420,7 @@ function things_checking() {
   if (blacks && blacks.length > 1 &&!is_collide) checking(blacks, blacks_info);
   if (stairs && stairs.length > 1 &&!is_collide) checking(stairs, stair_info);
   if (grasses && grasses.length > 1 &&!is_collide) checking(grasses, grass_info);
-  if (yellows && yellows.length > 1 &&!is_collide) checking(yellows, yellow_info);
+  // if (yellows && yellows.length > 1 &&!is_collide) checking(yellows, yellow_info);
   if (no_lines && no_lines.length > 1 &&!is_collide) checking(no_lines, no_line_info);
 }
 
